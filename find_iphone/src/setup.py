@@ -6,6 +6,6 @@ setup(name='find_iphone',
       url='http://github.com',
       author='Jose Miguel Almellones',
       author_email='jmalmellones@gmail.com',
-      license='MIT',
+      license='GPLv2',
       packages=[],
       zip_safe=False)
