@@ -1,7 +1,7 @@
 __author__ = 'jmalmellones'
 import feedparser
 
-# returns current temperature in ºC in location
+# returns current temperature in C in location
 #location for Mostoles, Madrid (Spain) = 767893
 
 
