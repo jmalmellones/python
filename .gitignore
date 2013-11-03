@@ -36,3 +36,8 @@ nosetests.xml
 .pydevproject
 
 .DS_Store
+rss_downloader/Synology_Download_Station_Official_API_V3.pdf
+
+synology_client/synology_client/config.json
+
+morning/morning.py
