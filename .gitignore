@@ -38,6 +38,18 @@ nosetests.xml
 .DS_Store
 rss_downloader/Synology_Download_Station_Official_API_V3.pdf
 
+morning/morning.py
+
+rss_downloader/response.json
+
 synology_client/synology_client/config.json
 
-morning/morning.py
+rss_downloader/rss_downloader/prowl_notifier.json
+
+rss_downloader/rss_downloader/rss_downloader.json
+
+rss_downloader/rss_downloader/synology_client.json
+
+prowl_notifier/prowl_notifier/prowl_notifier.json
+
+synology_client/synology_client/synology_client.json
