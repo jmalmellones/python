@@ -53,3 +53,5 @@ rss_downloader/rss_downloader/synology_client.json
 prowl_notifier/prowl_notifier/prowl_notifier.json
 
 synology_client/synology_client/synology_client.json
+
+lang_detector/lang_detector/__init__.py
