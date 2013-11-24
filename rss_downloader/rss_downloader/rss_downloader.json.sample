@@ -1,0 +1,16 @@
+{
+    "session_name" : "rss_downloader",
+    "includes": [
+        "The walking dead",
+        "Breaking bad",
+        "Castle",
+        "Revolution",
+        "Arrow",
+        "Dexter",
+        "Agents of SHIELD",
+        "Homeland"
+    ],
+    "excludes": [
+        "BR-Line"
+    ]
+}
