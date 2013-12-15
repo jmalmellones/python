@@ -14,13 +14,9 @@ import prowl_notifier
 config_file = 'rss_downloader.json'
 config = json.load(open(config_file))
 
-connection = pymongo.MongoClient()
-torrents = connection.descargas.torrents
-respuestas_rss = connection.descargas.respuestas_rss
 
-
-def reload_config(self):
-    self.config = json.load(open(config_file))
+def reload_config():
+    return json.load(open(config_file))
 
 
 def includes():
@@ -72,7 +68,7 @@ def excluded(title):
     return False
 
 
-def treat_entry(entry, security_id):
+def treat_entry(entry, security_id, torrents):
     """
     treats each of the rss entries
     """
@@ -115,9 +111,13 @@ def read_elitetorrent():
     d = feedparser.parse('http://www.elitetorrent.net/rss.php')
     if d['status'] == 200:
         print('status ok, interpreting data')
+        connection = pymongo.MongoClient()
+        torrents = connection.descargas.torrents
+        # respuestas_rss = connection.descargas.respuestas_rss
         security_id = synology_client.login(session_name())
         for theEntry in d['entries']:
-            treat_entry(theEntry, security_id)
+            treat_entry(theEntry, security_id, torrents)
+        connection.close()
         synology_client.logout(session_name())
     else:
         print("status received from server is not 200, giving up...")
@@ -129,7 +129,7 @@ if __name__ == "__main__":
             read_elitetorrent()
             print("waiting 1 hour to ask again...")
             time.sleep(60 * 60)  # 1 hour
-            reload_config()
+            config = reload_config()
     except KeyboardInterrupt:
         print "terminando..."
         sys.exit()
