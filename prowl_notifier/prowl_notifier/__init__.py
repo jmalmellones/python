@@ -10,8 +10,13 @@ api_key = config['api_key']
 url = "https://prowl.weks.net/publicapi/add"
 
 
+def encode_utf_8(texto):
+    return unicode(texto).encode('utf-8')
+
+
 def send_notification(app, event, description):
-    f = {'apikey': api_key, 'application': app, 'event': event, "description": description}
+    f = {'apikey': api_key, 'application': encode_utf_8(app), 'event': encode_utf_8(event),
+         'description': encode_utf_8(description)}
     e = urllib2.urlopen(url, urllib.urlencode(f))
     xml = e.read()
     root = ET.fromstring(xml)
