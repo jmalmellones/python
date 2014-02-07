@@ -122,14 +122,47 @@ def read_elitetorrent():
     else:
         print("status received from server is not 200, giving up...")
 
+def download_previously_not_included():
+    print "searching included that previously were skipped"
+    connection = pymongo.MongoClient()
+    security_id = synology_client.login(session_name())
+    torrents = connection.descargas.torrents
+    for include in includes():
+        print "checking include ", include, " to see if we left something..."
+        documento = {"titulo": {"$regex": include}, "incluido": False, "excluido": False}
+        for doc in torrents.find(documento):
+            # vemos si por el titulo exacto ya se ha descargado
+            titulo = doc['titulo']
+            url = doc['url']
+            encontrado = torrents.find_one({'titulo': titulo})
+            if "descargado" not in encontrado or encontrado['descargado'] is False:
+                print "downloading ", titulo, " at url ", url
+                html = download_file.download_url_html(url)
+                magnets = download_file.download_magnet_in_html_regex(html)
+                for magnet in magnets:
+                    synology_client.add_task(magnet, security_id)
+                encontrado['descargado'] = True
+                encontrado['incluido'] = True
+                torrents.save(encontrado)
+                print "updated document to remember that it was already downloaded"
+                print "waiting 10 seg..."
+                time.sleep(10)  # wait 10 seconds trying not to trigger server DOS counter measures
+    synology_client.logout(session_name())
+    connection.close()
 
 if __name__ == "__main__":
     try:
         while True:
+            # raise Exception('spam', 'eggs')
+            download_previously_not_included()
             read_elitetorrent()
-            print("waiting 1 hour to ask again...")
-            time.sleep(60 * 60)  # 1 hour
+            print("waiting 2 hours to ask again...")
+            time.sleep(60 * 60 * 2)  # 1 hour
             config = reload_config()
     except KeyboardInterrupt:
-        print "terminando..."
+        print "finishing..."
+        sys.exit()
+    except:
+        print "Unexpected error:", sys.exc_info()[0]
+        notify_using_prowl("Unexpected error", str(sys.exc_info()[0]))  # lets you download it manually
         sys.exit()
