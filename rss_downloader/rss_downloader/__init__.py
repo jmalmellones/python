@@ -1,15 +1,19 @@
 __author__ = 'jmalmellones'
-import feedparser
-import download_file
 import time
-import synology_client
 import json
-import say
-import pymongo
 import sys
 from time import mktime
 from datetime import datetime
+
+import feedparser
+import pymongo
+
+import download_file
+from synology_client import General, DownloadStation, FileStation
+import say
 import prowl_notifier
+import os.path
+
 
 config_file = 'rss_downloader.json'
 config = json.load(open(config_file))
@@ -20,8 +24,15 @@ def reload_config():
 
 
 def includes():
-    return config['includes']
+    result = []
+    for include in config['includes']:
+        result.append(include['cadena'])
+    return result
 
+
+
+def download_dir():
+    return config['download_dir']
 
 def excludes():
     return config['excludes']
@@ -56,6 +67,7 @@ def included(title):
     """ returns True if title is included in the configuration """
     for include in includes():
         if include.lower() in title.lower():
+            print title.lower(), ' matches ', include.lower()
             return True
     return False
 
@@ -64,6 +76,7 @@ def excluded(title):
     """ returns True if title is excluded in the configuration """
     for exclude in excludes():
         if exclude.lower() in title.lower():
+            print title.lower(), ' excluded by filter ', exclude.lower()
             return True
     return False
 
@@ -94,7 +107,7 @@ def treat_entry(entry, security_id, torrents):
                 esperar = True
                 magnets = download_file.download_magnet_in_html_regex(html)
                 for magnet in magnets:
-                    synology_client.add_task(magnet, security_id)
+                    DownloadStation.add_task(magnet, security_id)
                 documento['descargado'] = True
             else:
                 print "filter does not include '", titulo, "'"
@@ -114,18 +127,18 @@ def read_elitetorrent():
         connection = pymongo.MongoClient()
         torrents = connection.descargas.torrents
         # respuestas_rss = connection.descargas.respuestas_rss
-        security_id = synology_client.login(session_name())
+        security_id = General.login(session_name())
         for theEntry in d['entries']:
             treat_entry(theEntry, security_id, torrents)
         connection.close()
-        synology_client.logout(session_name())
+        General.logout(session_name())
     else:
         print("status received from server is not 200, giving up...")
 
 def download_previously_not_included():
     print "searching included that previously were skipped"
     connection = pymongo.MongoClient()
-    security_id = synology_client.login(session_name())
+    security_id = General.login(session_name())
     torrents = connection.descargas.torrents
     for include in includes():
         print "checking include ", include, " to see if we left something..."
@@ -140,29 +153,76 @@ def download_previously_not_included():
                 html = download_file.download_url_html(url)
                 magnets = download_file.download_magnet_in_html_regex(html)
                 for magnet in magnets:
-                    synology_client.add_task(magnet, security_id)
+                    DownloadStation.add_task(magnet, security_id)
                 encontrado['descargado'] = True
                 encontrado['incluido'] = True
                 torrents.save(encontrado)
                 print "updated document to remember that it was already downloaded"
                 print "waiting 10 seg..."
                 time.sleep(10)  # wait 10 seconds trying not to trigger server DOS counter measures
-    synology_client.logout(session_name())
+    General.logout(session_name())
     connection.close()
+
+
+def move_finished_to_destination():
+    print "moving finished tasks to destination folder"
+    security_id = General.login(session_name())
+    tasks = DownloadStation.get_tasks(security_id)
+    # for each task in download station
+    for task in tasks['data']['tasks']:
+        # where task has ended seeding
+        if task['status'] == 'finished':
+            title = task['title']
+            id = task['id']
+            for include in config['includes']:
+                # if the task was included automatically
+                if include['cadena'].lower() in title.lower():
+                    # we check if destination folder exists
+                    info = FileStation.get_info(include['destino'], security_id)
+                    if info['success'] == True:
+                        destino = info['data']['files'][0]
+                        if 'code' in destino and destino['code'] == 408:
+                            print "the directory does not exist, we create it"
+                            norm = os.path.normpath(destino['path'])
+                            nombre = os.path.basename(norm)
+                            path = os.path.dirname(norm)
+                            FileStation.create_folder(path, nombre, security_id)
+                        fichero_a_mover = download_dir() + '/' + title
+                        if FileStation.move(fichero_a_mover, destino['path'], security_id):
+                            print "moved ", fichero_a_mover, " to ", destino['path'], ", eliminando tarea"
+                            if DownloadStation.delete_task(id, security_id):
+                                print "deleted task ", id
+                    else:
+                        print "error obtaining info about ", include['destino']
+    General.logout(session_name())
+
 
 if __name__ == "__main__":
     try:
         while True:
             # raise Exception('spam', 'eggs')
-            download_previously_not_included()
-            read_elitetorrent()
+            try:
+                move_finished_to_destination()
+            except:
+                print "Unexpected error moving finished tasks to destination:", sys.exc_info()
+                notify_using_prowl("Unexpected error moving finished tasks to destination", str(sys.exc_info()))
+            try:
+                download_previously_not_included()
+            except:
+                print "Unexpected error downloading previously not included tasks:", sys.exc_info()
+                notify_using_prowl("Unexpected error downloading previously not included", str(sys.exc_info()))
+            try:
+                read_elitetorrent()
+            except:
+                print "Unexpected error reading elitetorrent:", sys.exc_info()
+                notify_using_prowl("Unexpected error reading elitetorrent", str(sys.exc_info()))
             print("waiting 2 hours to ask again...")
             time.sleep(60 * 60 * 2)  # 1 hour
             config = reload_config()
     except KeyboardInterrupt:
         print "finishing..."
         sys.exit()
-    except:
-        print "Unexpected error:", sys.exc_info()[0]
-        notify_using_prowl("Unexpected error", str(sys.exc_info()[0]))  # lets you download it manually
-        sys.exit()
+    #except:
+        #print "Unexpected error:", sys.exc_info()[0]
+        #notify_using_prowl("Unexpected error", str(sys.exc_info()[0]))  # lets you download it manually
+        #sys.exit()

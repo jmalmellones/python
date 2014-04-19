@@ -57,3 +57,5 @@ synology_client/synology_client/synology_client.json
 lang_detector/lang_detector/__init__.py
 
 correo/src/correo.py
+
+*.pdf
