@@ -1,14 +1,12 @@
 {
     "session_name" : "rss_downloader",
+    "download_dir" : "/public/downloaded",
     "includes": [
-        "The walking dead",
-        "Breaking bad",
-        "Castle",
-        "Revolution",
-        "Arrow",
-        "Dexter",
-        "Agents of SHIELD",
-        "Homeland"
+        {"cadena": "The walking dead", "destino": "/video/series/the walking dead"},
+        {"cadena": "Breaking bad", "destino": "/video/series/breaking bad"},
+        {"cadena": "Castle", "destino": "/video/series/castle"},
+        {"cadena": "Revolution", "destino": "/video/series/revolution"},
+        {"cadena": "Arrow", "destino": "/video/series/arrow"}
     ],
     "excludes": [
         "BR-Line"
