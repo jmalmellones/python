@@ -59,3 +59,9 @@ lang_detector/lang_detector/__init__.py
 correo/src/correo.py
 
 *.pdf
+
+borrarAntiguos.py
+
+limpiarEscritorio.py
+
+limpiarLogs.py
