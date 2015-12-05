@@ -67,3 +67,23 @@ limpiarEscritorio.py
 limpiarLogs.py
 
 rss_downloader/rss_downloader/quitar_elitetorrent.json
+
+.idea/misc.xml
+
+.idea/.name
+
+.idea/dictionaries/jmalmellones.xml
+
+.idea/inspectionProfiles/profiles_settings.xml
+
+.idea/inspectionProfiles/Project_Default.xml
+
+.idea/modules.xml
+
+.idea/python.iml
+
+.idea/vcs.xml
+
+.idea/workspace.xml
+
+pushbullet_notifier/pushbullet_notifier/pushbullet_notifier.json
