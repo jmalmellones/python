@@ -2,21 +2,27 @@ __author__ = 'jmalmellones'
 import time
 import json
 import sys
+import re
 from time import mktime
 from datetime import datetime
 
 import feedparser
 import pymongo
+import logging
 
 import download_file
 from synology_client import General, DownloadStation, FileStation
 import say
 import prowl_notifier
+import quitar_elitetorrent
 import os.path
 
 
 config_file = 'rss_downloader.json'
 config = json.load(open(config_file))
+
+logging.basicConfig(level=logging.WARNING)
+log = logging.getLogger('rss_downloader')
 
 
 def reload_config():
@@ -142,7 +148,8 @@ def download_previously_not_included():
     torrents = connection.descargas.torrents
     for include in includes():
         print "checking include ", include, " to see if we left something..."
-        documento = {"titulo": {"$regex": include}, "incluido": False, "excluido": False}
+        #documento = {"titulo": {"$regex": include}, "incluido": False, "excluido": False}
+        documento = {"titulo": re.compile(include, re.IGNORECASE), "incluido": False, "excluido": False}
         for doc in torrents.find(documento):
             # vemos si por el titulo exacto ya se ha descargado
             titulo = doc['titulo']
@@ -159,7 +166,7 @@ def download_previously_not_included():
                 torrents.save(encontrado)
                 print "updated document to remember that it was already downloaded"
                 print "waiting 10 seg..."
-                time.sleep(10)  # wait 10 seconds trying not to trigger server DOS counter measures
+                time.sleep(10)  # wait 10 seconds trying not to trigger server DDOS counter measures
     General.logout(session_name())
     connection.close()
 
@@ -192,6 +199,9 @@ def move_finished_to_destination():
                             print "moved ", fichero_a_mover, " to ", destino['path'], ", eliminando tarea"
                             if DownloadStation.delete_task(id, security_id):
                                 print "deleted task ", id
+                            say.say("ya esta disponible el fichero " + title + " en el NAS")
+                        else:
+                            print "hubo un problema moviendo fichero ", title
                     else:
                         print "error obtaining info about ", include['destino']
     General.logout(session_name())
@@ -202,20 +212,36 @@ if __name__ == "__main__":
         while True:
             # raise Exception('spam', 'eggs')
             try:
+                say.say("voy a mover los torrent terminados al directorio de videos")
                 move_finished_to_destination()
+            except TypeError as e:
+                print e
             except:
-                print "Unexpected error moving finished tasks to destination:", sys.exc_info()
-                notify_using_prowl("Unexpected error moving finished tasks to destination", str(sys.exc_info()))
+                errorMoving = "Unexpected error moving finished tasks to destination"
+                log.exception(errorMoving)
+                print errorMoving, ":", sys.exc_info()
+                notify_using_prowl(errorMoving, str(sys.exc_info()))
+
             try:
+                say.say("estoy quitando la marca elite torrent a todos los ficheros de pelis y series")
+                quitar_elitetorrent.quitar_elitetorrent()
+            except:
+                print "Unexpected error removing elitetorrent from files' names:", sys.exc_info()
+                notify_using_prowl("Unexpected error emoving elitetorrent from files' names", str(sys.exc_info()))
+
+            try:
+                say.say("estoy repasando por si me he dejado algo por bajar")
                 download_previously_not_included()
             except:
                 print "Unexpected error downloading previously not included tasks:", sys.exc_info()
                 notify_using_prowl("Unexpected error downloading previously not included", str(sys.exc_info()))
             try:
+                say.say("contactando con elitetorrent, viendo si hay algo nuevo")
                 read_elitetorrent()
             except:
                 print "Unexpected error reading elitetorrent:", sys.exc_info()
                 notify_using_prowl("Unexpected error reading elitetorrent", str(sys.exc_info()))
+            say.say("hasta dentro de 2 horas!")
             print("waiting 2 hours to ask again...")
             time.sleep(60 * 60 * 2)  # 1 hour
             config = reload_config()

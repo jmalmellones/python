@@ -65,3 +65,5 @@ borrarAntiguos.py
 limpiarEscritorio.py
 
 limpiarLogs.py
+
+rss_downloader/rss_downloader/quitar_elitetorrent.json
