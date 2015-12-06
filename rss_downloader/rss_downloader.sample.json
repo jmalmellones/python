@@ -1,14 +1,8 @@
 {
+    "mongodb" : {
+      "host" : "localhost",
+      "port" : 27017
+    },
     "session_name" : "rss_downloader",
-    "download_dir" : "/public/downloaded",
-    "includes": [
-        {"cadena": "The walking dead", "destino": "/video/series/the walking dead"},
-        {"cadena": "Breaking bad", "destino": "/video/series/breaking bad"},
-        {"cadena": "Castle", "destino": "/video/series/castle"},
-        {"cadena": "Revolution", "destino": "/video/series/revolution"},
-        {"cadena": "Arrow", "destino": "/video/series/arrow"}
-    ],
-    "excludes": [
-        "BR-Line"
-    ]
+    "download_dir" : "/public/downloaded"
 }

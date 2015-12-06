@@ -1,4 +1,3 @@
-__author__ = 'jmalmellones'
 import time
 import json
 import sys
@@ -17,31 +16,21 @@ import prowl_notifier
 import quitar_elitetorrent
 import os.path
 
-
-config_file = 'rss_downloader.json'
-config = json.load(open(config_file))
+__author__ = 'jmalmellones'
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger('rss_downloader')
+
+config_file = 'rss_downloader.json'
+config = json.load(open(config_file))
 
 
 def reload_config():
     return json.load(open(config_file))
 
 
-def includes():
-    result = []
-    for include in config['includes']:
-        result.append(include['cadena'])
-    return result
-
-
-
 def download_dir():
     return config['download_dir']
-
-def excludes():
-    return config['excludes']
 
 
 def session_name():
@@ -71,8 +60,8 @@ def from_datetime_struct_to_timestamp(date_time_struct):
 
 def included(title):
     """ returns True if title is included in the configuration """
-    for include in includes():
-        if include.lower() in title.lower():
+    for include in includes:
+        if include['cadena'].lower() in title.lower():
             print title.lower(), ' matches ', include.lower()
             return True
     return False
@@ -80,7 +69,7 @@ def included(title):
 
 def excluded(title):
     """ returns True if title is excluded in the configuration """
-    for exclude in excludes():
+    for exclude in excludes:
         if exclude.lower() in title.lower():
             print title.lower(), ' excluded by filter ', exclude.lower()
             return True
@@ -125,12 +114,40 @@ def treat_entry(entry, security_id, torrents):
         time.sleep(10)  # wait 10 seconds trying not to trigger server DOS counter measures
 
 
+def get_mongo_client():
+    connection = pymongo.MongoClient(config['mongodb']['host'], config['mongodb']['port'])
+    return connection
+
+
+def reload_includes():
+    result = []
+    connection = get_mongo_client()
+    the_includes = connection.descargas.includes.find()
+    for include in the_includes:
+        result.append({'cadena': include['cadena'], 'destino': include['destino']})
+    connection.close()
+    return result
+
+includes = reload_includes()
+
+def reload_excludes():
+    result = []
+    connection = get_mongo_client()
+    the_excludes = connection.descargas.excludes.find()
+    for exclude in the_excludes:
+        result.append(exclude['cadena'])
+    connection.close()
+    return result
+
+excludes = reload_excludes()
+
+
 def read_elitetorrent():
     print "reading data from elitetorrent"
     d = feedparser.parse('http://www.elitetorrent.net/rss.php')
     if d['status'] == 200:
         print('status ok, interpreting data')
-        connection = pymongo.MongoClient()
+        connection = get_mongo_client()
         torrents = connection.descargas.torrents
         # respuestas_rss = connection.descargas.respuestas_rss
         security_id = General.login(session_name())
@@ -141,15 +158,15 @@ def read_elitetorrent():
     else:
         print("status received from server is not 200, giving up...")
 
+
 def download_previously_not_included():
     print "searching included that previously were skipped"
-    connection = pymongo.MongoClient()
+    connection = get_mongo_client()
     security_id = General.login(session_name())
     torrents = connection.descargas.torrents
-    for include in includes():
-        print "checking include ", include, " to see if we left something..."
-        #documento = {"titulo": {"$regex": include}, "incluido": False, "excluido": False}
-        documento = {"titulo": re.compile(include, re.IGNORECASE), "incluido": False, "excluido": False}
+    for include in includes:
+        print "checking include ", include['cadena'], " to see if we left something..."
+        documento = {"titulo": re.compile(include['cadena'], re.IGNORECASE), "incluido": False, "excluido": False}
         for doc in torrents.find(documento):
             # vemos si por el titulo exacto ya se ha descargado
             titulo = doc['titulo']
@@ -181,12 +198,12 @@ def move_finished_to_destination():
         if task['status'] == 'finished':
             title = task['title']
             id = task['id']
-            for include in config['includes']:
+            for include in includes:
                 # if the task was included automatically
                 if include['cadena'].lower() in title.lower():
                     # we check if destination folder exists
                     info = FileStation.get_info(include['destino'], security_id)
-                    if info['success'] == True:
+                    if info['success']:
                         destino = info['data']['files'][0]
                         if 'code' in destino and destino['code'] == 408:
                             print "the directory does not exist, we create it"
@@ -210,7 +227,6 @@ def move_finished_to_destination():
 if __name__ == "__main__":
     try:
         while True:
-            # raise Exception('spam', 'eggs')
             try:
                 say.say("voy a mover los torrent terminados al directorio de videos")
                 move_finished_to_destination()
@@ -245,10 +261,8 @@ if __name__ == "__main__":
             print("waiting 2 hours to ask again...")
             time.sleep(60 * 60 * 2)  # 1 hour
             config = reload_config()
+            includes = reload_includes()
+            excludes = reload_excludes()
     except KeyboardInterrupt:
         print "finishing..."
         sys.exit()
-    #except:
-        #print "Unexpected error:", sys.exc_info()[0]
-        #notify_using_prowl("Unexpected error", str(sys.exc_info()[0]))  # lets you download it manually
-        #sys.exit()
