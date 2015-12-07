@@ -62,7 +62,7 @@ def included(title):
     """ returns True if title is included in the configuration """
     for include in includes:
         if include['cadena'].lower() in title.lower():
-            print title.lower(), ' matches ', include.lower()
+            print title.lower(), ' matches ', include['cadena'].lower()
             return True
     return False
 
