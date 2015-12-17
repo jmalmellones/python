@@ -1,8 +1,0 @@
-{
-    "mongodb" : {
-      "host" : "localhost",
-      "port" : 27017
-    },
-    "session_name" : "rss_downloader",
-    "download_dir" : "/public/downloaded"
-}
