@@ -30,6 +30,7 @@ import download_file
 from synology_client import General, DownloadStation, FileStation
 import say
 import prowl_notifier
+import telegram_bot
 import quitar_elitetorrent
 import os.path
 
@@ -54,11 +55,12 @@ def session_name():
     return config['session_name']
 
 
-def notify_using_prowl(event, description):
+def notify_mobile_phone(event, description):
     """
     convenience method to call prowl with a notification
     """
-    prowl_notifier.send_notification('rss_downloader', event, description)
+    #prowl_notifier.send_notification('rss_downloader', event, description)
+    telegram_bot.sendMessage(event + ' ' + description)
 
 
 def notify_using_tts(event, description):
@@ -123,7 +125,7 @@ def treat_entry(entry, security_id, torrents):
                 documento['descargado'] = True
             else:
                 print "filter does not include '", titulo, "'"
-                notify_using_prowl(titulo + " not included", url)  # lets you download it manually
+                notify_mobile_phone(titulo + " not included", url)  # lets you download it manually
                 documento['notificado'] = True
         torrents.insert(documento)
     if esperar:
@@ -253,27 +255,27 @@ if __name__ == "__main__":
                 errorMoving = "Unexpected error moving finished tasks to destination"
                 log.exception(errorMoving)
                 print errorMoving, ":", sys.exc_info()
-                notify_using_prowl(errorMoving, str(sys.exc_info()))
+                notify_mobile_phone(errorMoving, str(sys.exc_info()))
 
             try:
                 say.say("estoy quitando la marca elite torrent a todos los ficheros de pelis y series")
                 quitar_elitetorrent.quitar_elitetorrent()
             except:
                 print "Unexpected error removing elitetorrent from files' names:", sys.exc_info()
-                notify_using_prowl("Unexpected error emoving elitetorrent from files' names", str(sys.exc_info()))
+                notify_mobile_phone("Unexpected error emoving elitetorrent from files' names", str(sys.exc_info()))
 
             try:
                 say.say("estoy repasando por si me he dejado algo por bajar")
                 download_previously_not_included()
             except:
                 print "Unexpected error downloading previously not included tasks:", sys.exc_info()
-                notify_using_prowl("Unexpected error downloading previously not included", str(sys.exc_info()))
+                notify_mobile_phone("Unexpected error downloading previously not included", str(sys.exc_info()))
             try:
                 say.say("contactando con elitetorrent, viendo si hay algo nuevo")
                 read_elitetorrent()
             except:
                 print "Unexpected error reading elitetorrent:", sys.exc_info()
-                notify_using_prowl("Unexpected error reading elitetorrent", str(sys.exc_info()))
+                notify_mobile_phone("Unexpected error reading elitetorrent", str(sys.exc_info()))
             say.say("hasta dentro de 2 horas!")
             print("waiting 2 hours to ask again...")
             time.sleep(60 * 60 * 2)  # 1 hour
