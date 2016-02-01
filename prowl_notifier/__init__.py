@@ -26,7 +26,11 @@ url = "https://prowl.weks.net/publicapi/add"
 
 
 def encode_utf_8(texto):
-    return unicode(texto).encode('utf-8')
+    try:
+        return unicode(texto).encode('utf-8')
+    except UnicodeEncodeError as e:
+        print e
+        return texto.encode('utf-8')
 
 
 def send_notification(app, event, description):
