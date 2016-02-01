@@ -179,30 +179,36 @@ def read_elitetorrent():
 
 
 def download_previously_not_included():
-    print "searching included that previously were skipped"
+    print "searching includes that were previously skipped"
     connection = get_mongo_client()
     security_id = General.login(session_name())
     torrents = connection.descargas.torrents
+    """
+    we go through includes checking if something that was not included neither
+    excluded can be now marked as included
+    """
     for include in includes:
-        print "checking include ", include['cadena'], " to see if we left something..."
+        # print "checking include ", include['cadena'], " to see if we left something..."
         documento = {"titulo": re.compile(include['cadena'], re.IGNORECASE), "incluido": False, "excluido": False}
         for doc in torrents.find(documento):
-            # vemos si por el titulo exacto ya se ha descargado
+            # we check if it has been downloaded by exact title
             titulo = doc['titulo']
             url = doc['url']
-            encontrado = torrents.find_one({'titulo': titulo})
-            if "descargado" not in encontrado or encontrado['descargado'] is False:
-                print "downloading ", titulo, " at url ", url
-                html = download_file.download_url_html(url)
-                magnets = download_file.download_magnet_in_html_regex(html)
-                for magnet in magnets:
-                    DownloadStation.add_task(magnet, security_id)
-                encontrado['descargado'] = True
-                encontrado['incluido'] = True
-                torrents.save(encontrado)
-                print "updated document to remember that it was already downloaded"
-                print "waiting 10 seg..."
-                time.sleep(10)  # wait 10 seconds trying not to trigger server DDOS counter measures
+            if excluido(titulo):
+                print "se encontro ", titulo, " que esta incluido por ", include['cadena'], " pero no se descarga por estar tambien excluido"
+            else:
+                encontrado = torrents.find_one({'titulo': titulo})
+                if "descargado" not in encontrado or encontrado['descargado'] is False:
+                    print "downloading ", titulo, " at url ", url
+                    html = download_file.download_url_html(url)
+                    magnets = download_file.download_magnet_in_html_regex(html)
+                    for magnet in magnets:
+                        DownloadStation.add_task(magnet, security_id)
+                    encontrado['descargado'] = True
+                    encontrado['incluido'] = True
+                    torrents.save(encontrado)
+                    print "updated document to remember that it was already downloaded, waiting 10 seg..."
+                    time.sleep(10)  # wait 10 seconds trying not to trigger server DDOS counter measures
     General.logout(session_name())
     connection.close()
 
