@@ -42,6 +42,19 @@ log = logging.getLogger('rss_downloader')
 config_file = 'rss_downloader.json'
 config = json.load(open(config_file))
 
+def welcome_string(obj, encoding='utf-8'):
+    """For objects entering the system. Returns utf-8 unicode objects."""
+    if isinstance(obj, basestring):
+        if not isinstance(obj, unicode):
+            obj = unicode(obj, encoding)
+    return obj
+    
+def goodbye_string(obj, encoding = 'utf-8'):
+    """For objects leaving the system. Returns an str instance."""
+    if isinstance(obj, basestring):
+        if isinstance(obj, unicode):
+            obj.encode(encoding, 'ignore')
+    return obj
 
 def reload_config():
     return json.load(open(config_file))
@@ -96,12 +109,10 @@ def excluded(title):
 
 
 def treat_entry(entry, security_id, torrents):
-    """
-    treats each of the rss entries
-    """
+    """ treats each of the rss entries """
     esperar = False
-    titulo = entry['title_detail']['value']
-    url = entry['link']
+    titulo = welcome_string(entry['title_detail']['value'])
+    url = welcome_string(entry['link'])
     fecha = entry['published_parsed']
     documento = {"titulo": titulo, "url": url, "fecha": from_datetime_struct_to_timestamp(fecha)}
     document = torrents.find_one(documento)
@@ -139,6 +150,7 @@ def get_mongo_client():
 
 
 def reload_includes():
+    """ Returns all in unicode fron MongoDB """
     result = []
     connection = get_mongo_client()
     the_includes = connection.descargas.includes.find()
@@ -150,6 +162,7 @@ def reload_includes():
 includes = reload_includes()
 
 def reload_excludes():
+    """ Returns all in unicode fron MongoDB """
     result = []
     connection = get_mongo_client()
     the_excludes = connection.descargas.excludes.find()
@@ -215,7 +228,7 @@ def move_finished_to_destination():
     for task in tasks['data']['tasks']:
         # where task has ended seeding
         if task['status'] == 'finished':
-            title = task['title']
+            title = welcome_string(task['title'])
             id = task['id']
             for include in includes:
                 # if the task was included automatically
