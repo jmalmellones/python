@@ -13,13 +13,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 def welcome_string(obj, encoding='utf-8'):
     """For objects entering the system. Returns utf-8 unicode objects."""
     if isinstance(obj, basestring):
         if not isinstance(obj, unicode):
             obj = unicode(obj, encoding)
     return obj
-    
+
+
+def printable_string(obj):
+    """For unicode objects which should be printed to the screen."""
+    if isinstance(obj,unicode):
+        obj = obj.encode('ascii','ignore')
+    return obj    
+
+
 def goodbye_string(obj, encoding = 'utf-8'):
     """For objects leaving the system. Returns an str instance."""
     if isinstance(obj, basestring):

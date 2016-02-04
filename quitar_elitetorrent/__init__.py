@@ -19,6 +19,7 @@ import os
 import re
 import subprocess
 import json
+import unicode_functions
 
 config_file = 'quitar_elitetorrent.json'
 config = json.load(open(config_file))
@@ -57,7 +58,7 @@ def tratar_directorio(directorio):
         if os.path.isfile(fichero):
             tratar_fichero(fichero)
         else:
-            print 'tratando directorio ', fichero
+            print 'tratando directorio ', unicode_functions.printable_string(fichero)
             tratar_directorio(fichero)
 
 
