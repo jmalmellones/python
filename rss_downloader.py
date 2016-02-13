@@ -29,7 +29,7 @@ import logging
 import download_file
 from synology_client import General, DownloadStation, FileStation
 import say
-import prowl_notifier
+# import prowl_notifier
 import telegram_bot
 import quitar_elitetorrent
 import os.path
@@ -149,6 +149,7 @@ def reload_includes():
 
 includes = reload_includes()
 
+
 def reload_excludes():
     result = []
     connection = get_mongo_client()
@@ -194,8 +195,9 @@ def download_previously_not_included():
             # we check if it has been downloaded by exact title
             titulo = doc['titulo']
             url = doc['url']
-            if excluido(titulo):
-                print "se encontro ", titulo, " que esta incluido por ", include['cadena'], " pero no se descarga por estar tambien excluido"
+            if excluded(titulo):
+                print "se encontro ", titulo, " que esta incluido por ", include['cadena'], \
+                    " pero no se descarga por estar tambien excluido"
             else:
                 encontrado = torrents.find_one({'titulo': titulo})
                 if "descargado" not in encontrado or encontrado['descargado'] is False:
