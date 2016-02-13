@@ -1,3 +1,4 @@
+# coding=UTF-8
 """
     RSS Downloader. Automatically download rss linked pages' torrents.
     Copyright (C) 2016 Jose Miguel Almellones Cabello
@@ -18,12 +19,109 @@
 import requests
 import json
 import urllib2
+from datetime import datetime
+
+debug = False
 
 config = json.load(open('telegram_bot.json'))
 api_key = config['api_key']
 chat_id = config['chat_id']
 url = 'https://api.telegram.org/bot{0}'.format(api_key)
 offset = -1
+
+class User(object):
+    """
+    its a custom user built upon the telegram user
+    """
+    source = None
+
+    def __init__(self, telegramUser):
+        self.source = telegramUser
+
+    def getUsername(self):
+        return self.source['username']
+
+    def getFirstName(self):
+        return self.source['first_name']
+
+    def getLastName(self):
+        return self.source['last_name']
+
+    def getId(self):
+        return self.source['id']
+
+class Message(object):
+    """
+    its a custom message built upon the telegram message
+    """
+    source = None
+    def __init__(self, telegramMessage):
+        self.source = telegramMessage
+
+    def getDate(self):
+        return datetime.fromtimestamp(self.source['date'])
+
+    def getText(self):
+        return unicode(self.source['text']).encode('utf-8')
+
+    def getFrom(self):
+        return User(self.source['from'])
+
+
+class Update(object):
+    """
+    its a custom update built upon the telegram update
+
+    description from https://core.telegram.org/bots/api (only one of the
+    optional parameters can be in an update at the same time):
+
+    Field                    Type               Description
+    update_id                Integer            The update's unique identifier.
+                                                Update identifiers start from a
+                                                certain positive number and
+                                                increase sequentially.
+    message                 Message             Optional. New incoming message
+                                                of any kind — text, photo,
+                                                sticker, etc.
+    inline_query            InlineQuery         Optional. New incoming inline
+                                                query
+    chosen_inline_result    ChosenInlineResult  Optional. The result of an
+                                                inline query that was chosen by
+                                                a user and sent to their chat
+                                                partner.
+    """
+    tipo = "accion"
+    source = None
+    def __init__(self, telegramUpdate):
+        self.source = telegramUpdate
+
+    def getTipo(self):
+        return self.tipo
+
+    def isMessage(self):
+        return 'message' in self.source
+
+    def getMessage(self):
+        if self.isMessage():
+            return Message(self.source['message'])
+        return None
+
+    def isQuery(self):
+        return 'inline_query' in self.source
+
+    def getQuery(self):
+        if self.isQuery():
+            return self.source['inline_query']
+        return None
+
+    def isChosenInlineResult(self):
+        return 'chosen_inline_result' in self.source
+
+    def getChosenInlineResult(self):
+        if self.isChosenInlineResult():
+            return self.source['chosen_inline_result']
+        return None
+
 
 def getMe():
     target_url = '{0}/{1}'.format(url, 'getMe')
@@ -34,18 +132,22 @@ def getUpdates(seconds):
     global offset
     target_url = '{0}/{1}'.format(url, 'getUpdates')
     parameters = {'timeout': seconds}
-    print offset
+    if debug:
+        print "Offset actual {}".format(offset)
     if offset is not -1:
         offset += 1
         parameters['offset'] = offset
-    print parameters
+    if debug:
+        print "parametros de getUpdates: {}".format(parameters)
     result_json = requests.get(target_url, data = parameters).json()
     updates = result_json['result']
-    print updates
+    if debug:
+        print updates
     num_updates = len(updates)
     if num_updates > 0:
         offset = updates[num_updates - 1]['update_id']
-        print "nuevo offset es ", offset
+        if debug:
+            print "nuevo offset es {}".format(offset)
     return updates
 
 
@@ -56,24 +158,16 @@ def sendMessage(texto):
     return r.json()
 
 
-def tratarUpdate(update):
-    accion = obtenerAccionUpdate(update)
-    print "update con accion ", accion, ": ", toString(update)
-
-
-def obtenerAccionUpdate(update):
-    return "abrir"
-
-
-def toString(update):
-    message = update['message']
-    salida = "\nUpdate(\nfecha={0}\ntext={1}\nusername={2}\n)".format(message['date'], message['text'], message['from']['username'])
-    return salida
-
-
 if __name__ == "__main__":
     while True:
         updates = getUpdates(60*60)
         for update in updates:
-            tratarUpdate(update)
+            u = Update(update)
+            if u.isMessage():
+                m = u.getMessage()
+                un = m.getFrom().getUsername()
+                print "[{}] {}: {}".format(m.getDate(), un, m.getText())
+            #print a.getQuery()
+            #print a.getMessage()
+            #print a.getChosenResult()
         #print "updates: ", updates
