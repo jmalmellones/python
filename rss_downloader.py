@@ -292,7 +292,7 @@ if __name__ == "__main__":
                 traceback.print_exc()
             say.say("hasta dentro de 2 horas!")
             print("waiting 2 hours to ask again...")
-            time.sleep(60 * 60 * 2)  # 1 hour
+            time.sleep(60 * 60 * 2)  # 2 hour
             config = reload_config()
             includes = reload_includes()
             excludes = reload_excludes()
