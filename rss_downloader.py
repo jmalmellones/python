@@ -62,7 +62,7 @@ def notify_mobile_phone(event, description):
     convenience method to call prowl with a notification
     """
     #prowl_notifier.send_notification('rss_downloader', event, description)
-    telegram_bot.sendMessage(event + ' ' + description)
+    telegram_bot.send_message(event + ' ' + description)
 
 
 def notify_using_tts(event, description):
@@ -127,7 +127,8 @@ def treat_entry(entry, security_id, torrents):
                 documento['descargado'] = True
             else:
                 print "filter does not include '", unicode_functions.printable_string(titulo), "'"
-                notify_mobile_phone(titulo + " not included", url)  # lets you download it manually
+                #notify_mobile_phone(titulo + " not included", url)  # lets you download it manually
+                notify_mobile_phone(titulo + " not included")
                 documento['notificado'] = True
         torrents.insert(documento)
     if esperar:

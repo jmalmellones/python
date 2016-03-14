@@ -50,6 +50,7 @@ class User(object):
     def getId(self):
         return self.source['id']
 
+
 class Message(object):
     """
     its a custom message built upon the telegram message
@@ -95,40 +96,40 @@ class Update(object):
     def __init__(self, telegramUpdate):
         self.source = telegramUpdate
 
-    def getTipo(self):
+    def get_tipo(self):
         return self.tipo
 
-    def isMessage(self):
+    def is_message(self):
         return 'message' in self.source
 
-    def getMessage(self):
-        if self.isMessage():
+    def get_message(self):
+        if self.is_message():
             return Message(self.source['message'])
         return None
 
-    def isQuery(self):
+    def is_query(self):
         return 'inline_query' in self.source
 
-    def getQuery(self):
-        if self.isQuery():
+    def get_query(self):
+        if self.is_query():
             return self.source['inline_query']
         return None
 
-    def isChosenInlineResult(self):
+    def is_chosen_inline_result(self):
         return 'chosen_inline_result' in self.source
 
-    def getChosenInlineResult(self):
-        if self.isChosenInlineResult():
+    def get_chosen_inline_result(self):
+        if self.is_chosen_inline_result():
             return self.source['chosen_inline_result']
         return None
 
 
-def getMe():
+def get_me():
     target_url = '{0}/{1}'.format(url, 'getMe')
     return requests.get(target_url).json()
 
 
-def getUpdates(seconds):
+def get_updates(seconds):
     global offset
     target_url = '{0}/{1}'.format(url, 'getUpdates')
     parameters = {'timeout': seconds}
@@ -151,7 +152,7 @@ def getUpdates(seconds):
     return updates
 
 
-def sendMessage(texto):
+def send_message(texto):
     target_url = '{0}/{1}'.format(url, 'sendMessage')
     parameters = {'chat_id': chat_id, 'text': texto}
     r = requests.post(target_url, data = parameters)
@@ -160,14 +161,14 @@ def sendMessage(texto):
 
 if __name__ == "__main__":
     while True:
-        updates = getUpdates(60*60)
+        updates = get_updates(60 * 60)
         for update in updates:
             u = Update(update)
-            if u.isMessage():
-                m = u.getMessage()
+            if u.is_message():
+                m = u.get_message()
                 un = m.getFrom().getUsername()
                 print "[{}] {}: {}".format(m.getDate(), un, m.getText())
-            #print a.getQuery()
-            #print a.getMessage()
+            #print a.get_query()
+            #print a.get_message()
             #print a.getChosenResult()
         #print "updates: ", updates
