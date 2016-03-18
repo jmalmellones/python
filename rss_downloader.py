@@ -128,7 +128,7 @@ def treat_entry(entry, security_id, torrents):
             else:
                 print "filter does not include '", unicode_functions.printable_string(titulo), "'"
                 #notify_mobile_phone(titulo + " not included", url)  # lets you download it manually
-                notify_mobile_phone(titulo + " not included")
+                notify_mobile_phone(titulo + " not included", "")
                 documento['notificado'] = True
         torrents.insert(documento)
     if esperar:
