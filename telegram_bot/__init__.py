@@ -161,6 +161,7 @@ def send_message(texto):
 
 if __name__ == "__main__":
     while True:
+        send_message("prueba")
         updates = get_updates(60 * 60)
         for update in updates:
             u = Update(update)
