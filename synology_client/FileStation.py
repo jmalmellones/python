@@ -17,32 +17,40 @@
 """
 from synology_client import General
 
+
 def list_shares(security_id):
-    api_path = 'FileStation/file_share.cgi'
+    #api_path = 'FileStation/file_share.cgi'
+    api_path = 'entry.cgi'
     data_dict = {'api': 'SYNO.FileStation.List', 'version': 1, 'method': 'list_share', '_sid': security_id}
     result = General._synology_call(api_path, data_dict)
     if not result['success']:
         print 'error in list_shares: ', General._error_to_string(result['error']['code'])
     return result
 
+
 def list(folder, security_id):
-    api_path = 'FileStation/file_share.cgi'
-    data_dict = {'api': 'SYNO.FileStation.List', 'version': 1, 'method': 'list', 'folder_path': folder, '_sid': security_id}
+    #api_path = 'FileStation/file_share.cgi'
+    api_path = 'entry.cgi'
+    data_dict = {'api': 'SYNO.FileStation.List', 'version': 2, 'method': 'list', 'folder_path': folder, '_sid': security_id}
     result = General._synology_call(api_path, data_dict)
     if not result['success']:
         print 'error in list: ', General._error_to_string(result['error']['code'])
     return result
 
+
 def get_info(item, security_id):
-    api_path = 'FileStation/file_share.cgi'
+    #api_path = 'FileStation/file_share.cgi'
+    api_path = 'entry.cgi'
     data_dict = {'api': 'SYNO.FileStation.List', 'version': 1, 'method': 'getinfo', 'path': item, '_sid': security_id}
     result = General._synology_call(api_path, data_dict)
     if not result['success']:
         print 'error in get_info: ', General._error_to_string(result['error']['code'])
     return result
 
+
 def move(item, dest_path, security_id):
-    api_path = 'FileStation/file_MVCP.cgi'
+    #api_path = 'FileStation/file_MVCP.cgi'
+    api_path = 'entry.cgi'
     data_dict = {'api': 'SYNO.FileStation.CopyMove', 'version': 1, 'method': 'start', 'path': item,
                  'dest_folder_path': dest_path, 'overwrite': True, 'remove_src': True, '_sid': security_id}
     result = General._synology_call(api_path, data_dict)
@@ -52,8 +60,10 @@ def move(item, dest_path, security_id):
         print 'error requesting move: ', General._error_to_string(result['error']['code'])
         return False
 
+
 def create_folder(folder_path, name, security_id):
-    api_path = 'FileStation/file_crtfdr.cgi'
+    #api_path = 'FileStation/file_crtfdr.cgi'
+    api_path = 'entry.cgi'
     data_dict = {'api': 'SYNO.FileStation.CreateFolder', 'version': 1, 'method': 'create', 'folder_path': folder_path,
                  'name': name, '_sid': security_id}
     print data_dict
@@ -63,6 +73,7 @@ def create_folder(folder_path, name, security_id):
     else:
         print 'error in create_folder: ', General._error_to_string(result['error']['code'])
         return False
+
 
 def test():
     try:

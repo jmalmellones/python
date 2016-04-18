@@ -17,6 +17,7 @@
 """
 from synology_client import General
 
+
 def add_task(task_url, security_id):
     api_path = 'DownloadStation/task.cgi'
     data_dict = {'api': 'SYNO.DownloadStation.Task', 'version': 1, 'method': 'create',
@@ -28,6 +29,7 @@ def add_task(task_url, security_id):
         print 'error in add_task: ', General._error_to_string(result['error']['code'])
         return False
 
+
 def get_config(security_id):
     api_path = 'DownloadStation/info.cgi'
     data_dict = {'api': 'SYNO.DownloadStation.Info', 'version': 1, 'method': 'getconfig', '_sid': security_id}
@@ -35,6 +37,7 @@ def get_config(security_id):
     if not result['success']:
         print 'error in get_config: ', General._error_to_string(result['error']['code'])
     return result
+
 
 def get_info(security_id):
     api_path = 'DownloadStation/info.cgi'
@@ -44,6 +47,7 @@ def get_info(security_id):
         print 'error in get_info: ', General._error_to_string(result['error']['code'])
     return result
 
+
 def get_tasks(security_id):
     api_path = 'DownloadStation/task.cgi'
     data_dict = {'api': 'SYNO.DownloadStation.Task', 'version': 1, 'method': 'list', '_sid': security_id}
@@ -51,6 +55,7 @@ def get_tasks(security_id):
     if not result['success']:
         print 'error in get_tasks: ', General._error_to_string(result['error']['code'])
     return result
+
 
 def delete_task(id, security_id):
     api_path = 'DownloadStation/task.cgi'
@@ -61,6 +66,7 @@ def delete_task(id, security_id):
     else:
         print 'error in delete_task: ', General._error_to_string(result['error']['code'])
         return False
+
 
 def test():
     try:

@@ -61,6 +61,8 @@ def logout(session_name):
 #makes an api call to synology nas and returns response json
 def _synology_call(api_path, data_dict):
     data = urllib.urlencode(data_dict)
+    if config['debug']:
+        print server + api_path + '?' + data
     r = urllib2.urlopen(server + api_path, data)
     r2 = r.read()
     return json.loads(r2)
