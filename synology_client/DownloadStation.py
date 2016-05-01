@@ -59,7 +59,8 @@ def get_tasks(security_id):
 
 def delete_task(id, security_id):
     api_path = 'DownloadStation/task.cgi'
-    data_dict = {'api': 'SYNO.DownloadStation.Task', 'version': 1, 'method': 'delete', 'id': id, '_sid': security_id}
+    data_dict = {'api': 'SYNO.DownloadStation.Task', 'version': 1, 'method': 'delete', 'id': id, '_sid': security_id,
+                 'force_complete': 'false'}
     result = General._synology_call(api_path, data_dict)
     if result['success']:
         return True
@@ -78,11 +79,8 @@ def test():
         ds_tasks = get_tasks(id)
         for task in ds_tasks['data']['tasks']:
             print task
-        delete_task('dbid_943', id)
-        ds_tasks = get_tasks(id)
-        for task in ds_tasks['data']['tasks']:
-            print task
-        General.logout('test')
+        delete_task('dbid_3652', id)
+        #General.logout('test')
     except:
         print "error..."
 
