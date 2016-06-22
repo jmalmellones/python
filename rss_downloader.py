@@ -33,7 +33,7 @@ from synology_client import General, DownloadStation, FileStation
 import say
 # import prowl_notifier
 import telegram_bot
-import quitar_elitetorrent
+#import quitar_elitetorrent
 import unicode_functions
 
 __author__ = 'jmalmellones'
@@ -270,6 +270,7 @@ if __name__ == "__main__":
                 print errorMoving, ":", sys.exc_info()
                 notify_mobile_phone(errorMoving, str(sys.exc_info()))
                 traceback.print_exc()
+            """
             try:
                 say.say("estoy quitando la marca elite torrent a todos los ficheros de pelis y series")
                 quitar_elitetorrent.quitar_elitetorrent()
@@ -277,6 +278,7 @@ if __name__ == "__main__":
                 print "Unexpected error removing elitetorrent from files' names:", sys.exc_info()
                 notify_mobile_phone("Unexpected error emoving elitetorrent from files' names", str(sys.exc_info()))
                 traceback.print_exc()
+            """
             try:
                 say.say("estoy repasando por si me he dejado algo por bajar")
                 download_previously_not_included()
