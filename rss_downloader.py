@@ -33,7 +33,6 @@ from synology_client import General, DownloadStation, FileStation
 import say
 # import prowl_notifier
 import telegram_bot
-#import quitar_elitetorrent
 import unicode_functions
 
 __author__ = 'jmalmellones'
