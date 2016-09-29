@@ -31,7 +31,6 @@ import logging
 import download_file
 from synology_client import General, DownloadStation, FileStation
 import say
-# import prowl_notifier
 import telegram_bot
 import unicode_functions
 
