@@ -1,3 +1,4 @@
+# coding=UTF-8
 """
     RSS Downloader. Automatically download rss linked pages' torrents.
     Copyright (C) 2016 Jose Miguel Almellones Cabello
@@ -19,6 +20,8 @@ import subprocess
 import datetime
 import sys
 import re
+from soco import SoCo
+import soco
 
 week_day = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 weekend = ['Saturday', 'Sunday']
@@ -48,15 +51,26 @@ def say(sentence):
                 if built_in_pattern.search(line):
                     numero = number_pattern.search(line)
                     if numero:
-                        subprocess.call(["say", "-a", numero.group(0), sentence])
+                        """
+                            subprocess.call(["say", "-a", numero.group(0),
+                                         "-o", "/Users/jmalmellones/Desktop/public/temp.m4a", sentence])
+                        """
+                        subprocess.call(["say",
+                                         "-o", "/Users/jmalmellones/Desktop/public/temp.m4a", sentence])
+                        list(soco.discover())[0].play_uri('http://192.168.1.41:8080/temp.m4a')
                         break
 
             return
     print "say: ", sentence
 
 
+def test():
+    for zone in soco.discover():
+        print zone.player_name
+
+
 if __name__ == "__main__":
     """
     we test if all is working properly
     """
-    say('hola')
+    say('¡kevin!')
