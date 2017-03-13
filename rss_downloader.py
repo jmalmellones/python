@@ -30,7 +30,8 @@ import logging
 
 import download_file
 from synology_client import General, DownloadStation, FileStation
-import say
+# import say
+# import prowl_notifier
 import telegram_bot
 import unicode_functions
 
@@ -67,7 +68,7 @@ def notify_using_tts(event, description):
     """
     convenience method to notify with tts
     """
-    say.say(event + ", " + description)
+    #say.say(event + ", " + description)
 
 
 def from_datetime_struct_to_timestamp(date_time_struct):
@@ -246,7 +247,7 @@ def move_finished_to_destination():
                             print "moved ", fichero_a_mover, " to ", destino['path'], ", eliminando tarea"
                             if DownloadStation.delete_task(id, security_id):
                                 print "deleted task ", id
-                            say.say("ya esta disponible el fichero " + title + " en el NAS")
+                            #say.say("ya esta disponible el fichero " + title + " en el NAS")
                         else:
                             print "hubo un problema moviendo fichero ", title
                     else:
@@ -258,7 +259,7 @@ if __name__ == "__main__":
     try:
         while True:
             try:
-                say.say("voy a mover los torrent terminados al directorio de videos")
+                #say.say("voy a mover los torrent terminados al directorio de videos")
                 move_finished_to_destination()
             except TypeError as e:
                 print e
@@ -270,7 +271,7 @@ if __name__ == "__main__":
                 traceback.print_exc()
             """
             try:
-                say.say("estoy quitando la marca elite torrent a todos los ficheros de pelis y series")
+                #say.say("estoy quitando la marca elite torrent a todos los ficheros de pelis y series")
                 quitar_elitetorrent.quitar_elitetorrent()
             except:
                 print "Unexpected error removing elitetorrent from files' names:", sys.exc_info()
@@ -278,20 +279,20 @@ if __name__ == "__main__":
                 traceback.print_exc()
             """
             try:
-                say.say("estoy repasando por si me he dejado algo por bajar")
+                #say.say("estoy repasando por si me he dejado algo por bajar")
                 download_previously_not_included()
             except:
                 print "Unexpected error downloading previously not included tasks:", sys.exc_info()
                 notify_mobile_phone("Unexpected error downloading previously not included", str(sys.exc_info()))
                 traceback.print_exc()
             try:
-                say.say("contactando con elitetorrent, viendo si hay algo nuevo")
+                #say.say("contactando con elitetorrent, viendo si hay algo nuevo")
                 read_elitetorrent()
             except:
                 print "Unexpected error reading elitetorrent:", sys.exc_info()
                 notify_mobile_phone("Unexpected error reading elitetorrent", str(sys.exc_info()))
                 traceback.print_exc()
-            say.say("hasta dentro de 2 horas!")
+            #say.say("hasta dentro de 2 horas!")
             print("waiting 2 hours to ask again...")
             time.sleep(60 * 60 * 2)  # 2 hour
             config = reload_config()

@@ -51,7 +51,7 @@ def get_info(item, security_id):
 def move(item, dest_path, security_id):
     #api_path = 'FileStation/file_MVCP.cgi'
     api_path = 'entry.cgi'
-    data_dict = {'api': 'SYNO.FileStation.CopyMove', 'version': 1, 'method': 'start', 'path': item,
+    data_dict = {'api': 'SYNO.FileStation.CopyMove', 'version': 3, 'method': 'start', 'path': item,
                  'dest_folder_path': dest_path, 'overwrite': True, 'remove_src': True, '_sid': security_id}
     result = General._synology_call(api_path, data_dict)
     if result['success']:
